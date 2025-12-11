@@ -1,3 +1,13 @@
-# P2P Chat Application Dependencies
+# Dependencies
 cryptography>=41.0.0
 p2pnetwork>=1.2
+
+# Standard Library (Gaperlu instalasi, sudah built-in dengan Python)
+# - tkinter (GUI)
+# - threading (Concurrency)
+# - socket (Networking)
+# - json (Data serialization)
+# - uuid (Unique identifiers)
+# - os (File operations)
+# - base64 (Encoding)
+# - datetime (Timestamps)
