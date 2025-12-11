@@ -1,0 +1,3 @@
+# P2P Chat Application Dependencies
+cryptography>=41.0.0
+p2pnetwork>=1.2
