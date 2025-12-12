@@ -3,31 +3,30 @@ from tkinter import filedialog, messagebox, simpledialog
 import os
 from datetime import datetime
 from typing import Callable, Optional
+from network import get_local_ip
 
 
 # Set appearance mode and default color theme
 ctr.set_appearance_mode("dark")
-ctr.set_default_color_theme("black")
+ctr.set_default_color_theme("blue")
 
 
 class ChatGUI:
-    # GUI utama untuk aplikasi P2P Chat dengan CustomTkinter
-    
-    # Warna tema custom
+    # GUI dengan customTKinter
     COLORS = {
-        'bg_dark': '#1a0033',           # Deep violet
-        'bg_medium': '#2d1b4e',         # Royal purple
-        'bg_light': '#3d2963',          # Amethyst
-        'accent': '#ff6b35',            # Solar orange
-        'accent_hover': '#ff8c61',      # Light orange
-        'text': '#fff5e6',              # Warm white
-        'text_muted': '#c4b0d6',        # Lilac
-        'success': '#06ffa5',           # Mint green
-        'warning': '#ff006e',           # Raspberry
-        'border': '#4d3d6b',            # Violet border
-        'group': '#ffbe0b',             # Sun yellow
-        'message_sent': '#ff4800',      # Fire orange sent
-        'message_received': '#8338ec',  # Purple received
+        'bg_dark': '#1a0033',           
+        'bg_medium': '#2d1b4e',         
+        'bg_light': '#3d2963',         
+        'accent': '#ff6b35',           
+        'accent_hover': '#ff8c61',  
+        'text': '#fff5e6',              
+        'text_muted': '#c4b0d6',    
+        'success': '#06ffa5',         
+        'warning': '#ff006e',         
+        'border': '#4d3d6b',            
+        'group': '#ffbe0b',             
+        'message_sent': '#ff4800',      
+        'message_received': '#8338ec',  
     }
 
     
@@ -117,12 +116,13 @@ class ChatGUI:
         ip_label.pack(anchor="w")
         
         self.ip_entry = ctr.CTkEntry(conn_frame, height=32,
-                                    placeholder_text="10.60.45.122",
+                                    placeholder_text="IP peer yang terkoneksi",
                                     fg_color=self.COLORS['bg_light'],
                                     border_color=self.COLORS['border'],
                                     text_color=self.COLORS['text'])
         self.ip_entry.pack(fill="x", pady=(2, 4))
-        self.ip_entry.insert(0, "10.60.45.122")
+        ip = get_local_ip()
+        self.ip_entry.insert(0, ip)
         
         # Port Input
         port_label = ctr.CTkLabel(conn_frame, text="Port",
