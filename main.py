@@ -16,31 +16,23 @@ from gui import ChatGUI
 
 
 class P2PChatApp:
-    # Aplikasi utama P2P Chat dengan Group Chat support
-    
     DOWNLOAD_DIR = "downloads"
     
     def __init__(self):
-        # Buat folder downloads jika belum ada
+        # Inisialisasi
         if not os.path.exists(self.DOWNLOAD_DIR):
             os.makedirs(self.DOWNLOAD_DIR)
         
-        # Initialize components
         self.crypto = CryptoManager()
         self.network: P2PNode = None
         self.gui = ChatGUI()
         self.username = ""
-        
-        # Pending downloads
         self.pending_downloads = {}
         self.file_counter = 0
-        
-        # Setup callbacks
         self._setup_callbacks()
     
     def _setup_callbacks(self):
-        # Setup semua callbacks
-        # GUI callbacks
+        # Setup gui callbacks
         self.gui.on_connect = self._on_connect
         self.gui.on_send_message = self._on_send_message
         self.gui.on_send_file = self._on_send_file
@@ -66,15 +58,12 @@ class P2PChatApp:
             if success:
                 self.gui.add_system_message(f"Terhubung ke - {ip}:{port}!")
             else:
-                self.gui.show_error(f"Gagal terhubung ke - {ip}:{port}. Pastikan peer sudah berjalan.")
+                self.gui.show_error(f"Gagal terhubung ke - {ip}:{port}. Pastikan peer terkoneksi.")
     
     def _on_peer_connected(self, peer_id: str, username: str):
         # Handle peer baru terkoneksi
         print(f"[INFO] Peer connected: {username}")
-        # Kirim public key
         self.network.send_public_key(peer_id, self.crypto.get_public_key())
-        
-        # Update GUI (thread-safe)
         self.gui.root.after(0, lambda: self.gui.add_peer(peer_id, username))
     
     def _on_peer_disconnected(self, peer_id: str, username: str):
@@ -91,19 +80,13 @@ class P2PChatApp:
     def _on_send_message(self, peer_id: str, message: str):
         # Handle pengiriman pesan
         try:
-            # Enkripsi pesan
             encrypted = self.crypto.encrypt_message(message, peer_id)
-            
-            # Kirim pesan
             success = self.network.send_chat(peer_id, encrypted)
-            
             if success:
-                # Tampilkan di GUI
                 username = self.network.get_peer_username(peer_id)
                 self.gui.add_message(username, message, is_sent=True, peer_id=peer_id)
             else:
                 self.gui.show_error("Gagal mengirim pesan!")
-                
         except ValueError as e:
             self.gui.show_error(str(e))
         except Exception as e:
@@ -112,76 +95,55 @@ class P2PChatApp:
     def _on_message_received(self, peer_id: str, encrypted_data: dict):
         # Handle penerimaan pesan
         try:
-            # Dekripsi pesan
-            message = self.crypto.decrypt_message(encrypted_data)
+            message = self.crypto.decrypt_message(encrypted_data, peer_id)
             username = self.network.get_peer_username(peer_id)
-            
-            # Tampilkan di GUI (thread-safe)
             self.gui.root.after(0, lambda: self.gui.add_message(
                 username, message, is_sent=False, peer_id=peer_id
             ))
-            
         except Exception as e:
-            print(f"Error decrypting message: {e}")
+            print(f"Error dekripsi pesan: {e}")
     
     def _on_send_file(self, peer_id: str, filepath: str):
         # Handle pengiriman file
         def send_file_thread():
             try:
-                # Baca file
                 with open(filepath, 'rb') as f:
                     file_data = f.read()
-                
                 filename = os.path.basename(filepath)
-                
-                # Enkripsi file
                 encrypted = self.crypto.encrypt_file(file_data, peer_id)
-                
-                # Kirim file
+
                 self.network.send_file(peer_id, filename, encrypted)
-                
-                # Update GUI
                 self.gui.root.after(0, lambda: self.gui.add_file_message(
                     self.network.get_peer_username(peer_id),
                     filename,
                     is_sent=True,
                     peer_id=peer_id
                 ))
-                
             except ValueError as e:
                 self.gui.root.after(0, lambda: self.gui.show_error(str(e)))
             except Exception as e:
                 self.gui.root.after(0, lambda: self.gui.show_error(f"Error: {str(e)}"))
-        
-        # Jalankan di thread terpisah
+
         threading.Thread(target=send_file_thread, daemon=True).start()
     
     def _on_file_received(self, peer_id: str, filename: str, encrypted_data: dict):
         # Handle penerimaan file
         try:
-            # Generate file_id unik
             self.file_counter += 1
             file_id = f"file_{self.file_counter}_{datetime.now().strftime('%H%M%S')}"
-            
-            # Hitung ukuran file
             encrypted_file_data = encrypted_data.get('encrypted_file', '')
             filesize = len(encrypted_file_data) if isinstance(encrypted_file_data, bytes) else len(encrypted_file_data)
             
-            # Simpan data file sementara
             self.pending_downloads[file_id] = {
                 'peer_id': peer_id,
                 'filename': filename,
                 'encrypted_data': encrypted_data,
                 'filesize': filesize
             }
-            
             username = self.network.get_peer_username(peer_id)
-            
-            # Update GUI
             self.gui.root.after(0, lambda: self.gui.add_file_message_with_download(
                 username, filename, file_id, filesize, peer_id
             ))
-            
         except Exception as e:
             print(f"Error receiving file: {e}")
             self.gui.root.after(0, lambda: self.gui.show_error(f"Gagal menerima file: {str(e)}"))
@@ -191,23 +153,17 @@ class P2PChatApp:
         if file_id not in self.pending_downloads:
             self.gui.show_error("File tidak ditemukan!")
             return
-        
         file_info = self.pending_downloads[file_id]
         
         def download_thread():
             try:
-                # Dekripsi file
                 file_data = self.crypto.decrypt_file(
                     file_info['encrypted_data'],
                     file_info['peer_id']
                 )
                 
                 filename = file_info['filename']
-                
-                # Simpan file
                 save_path = os.path.join(self.DOWNLOAD_DIR, filename)
-                
-                # Jika file sudah ada
                 if os.path.exists(save_path):
                     name, ext = os.path.splitext(filename)
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -215,13 +171,9 @@ class P2PChatApp:
                 
                 with open(save_path, 'wb') as f:
                     f.write(file_data)
-                
-                # Hapus dari pending
                 del self.pending_downloads[file_id]
-                
-                # Update GUI
                 self.gui.root.after(0, lambda: self.gui.mark_file_downloaded(file_id, save_path))
-                
+
             except Exception as e:
                 print(f"Error downloading file: {e}")
                 self.gui.root.after(0, lambda: self.gui.show_error(f"Gagal menyimpan: {str(e)}"))
@@ -232,21 +184,13 @@ class P2PChatApp:
         # Handle progress transfer file
         self.gui.root.after(0, lambda: self.gui.show_progress(filename, progress))
     
-    # ==================== GROUP CHAT METHODS ====================
-    
     def _on_create_group(self, group_name: str, member_ids: list):
         # Handle create group
         try:
-            # Generate unique group id
             group_id = f"group_{uuid.uuid4().hex[:8]}"
-            
-            # Create group key
             group_key = self.crypto.create_group_key(group_id)
-            
-            # Create group in network and send invites
+
             self.network.create_group(group_id, group_name, member_ids, group_key)
-            
-            # Add group to GUI
             self.gui.root.after(0, lambda: self.gui.add_group(group_id, group_name))
             self.gui.root.after(0, lambda: self.gui.add_system_message(
                 f"Group '{group_name}' berhasil dibuat!"
@@ -258,10 +202,7 @@ class P2PChatApp:
     def _on_group_invite_received(self, group_id: str, group_name: str, group_key: str, from_id: str):
         # Handle group invite received
         try:
-            # Import group key
             self.crypto.set_group_key(group_id, group_key.encode('utf-8'))
-            
-            # Add group to GUI
             self.gui.root.after(0, lambda: self.gui.add_group(group_id, group_name))
             self.gui.root.after(0, lambda: self.gui.add_system_message(
                 f"Diundang ke group '{group_name}'!"
@@ -273,14 +214,9 @@ class P2PChatApp:
     def _on_send_group_message(self, group_id: str, message: str):
         # Handle send group message
         try:
-            # Encrypt with group key
             encrypted = self.crypto.encrypt_group_message(message, group_id)
-            
-            # Send to all group members
-            success = self.network.send_group_message(group_id, encrypted, self.username)
-            
+            success = self.network.send_group_message(group_id, encrypted, self.username) 
             if success:
-                # Show in GUI
                 self.gui.add_group_message(group_id, self.username, message, is_sent=True)
             else:
                 self.gui.show_error("Gagal mengirim pesan ke group!")
@@ -296,11 +232,7 @@ class P2PChatApp:
             group_id = payload['group_id']
             sender = payload['sender']
             encrypted_data = payload['encrypted']
-            
-            # Decrypt message
             message = self.crypto.decrypt_group_message(encrypted_data, group_id)
-            
-            # Show in GUI
             self.gui.root.after(0, lambda: self.gui.add_group_message(
                 group_id, sender, message, is_sent=False
             ))
@@ -308,14 +240,10 @@ class P2PChatApp:
         except Exception as e:
             print(f"Error decrypting group message: {e}")
     
-    # ==================== START/STOP ====================
-    
     def start(self):
-        # Mulai aplikasi
-        # Minta username
+        # Start app & Input username
         root = tk.Tk()
         root.withdraw()
-        
         username = simpledialog.askstring(
             "P2P Chat App",
             "Masukkan username anda:",
@@ -323,15 +251,13 @@ class P2PChatApp:
             initialvalue="user"
         )
         root.destroy()
-        
         if not username:
             username = "User"
         self.username = username
         
-        # Minta port
+        # Input port
         root = tk.Tk()
         root.withdraw()
-        
         port_str = simpledialog.askstring(
             "P2P Chat App",
             "Masukkan port untuk server peer anda:",
@@ -339,13 +265,12 @@ class P2PChatApp:
             initialvalue="5000"
         )
         root.destroy()
-        
         try:
             port = int(port_str) if port_str else 5050
         except ValueError:
             port = 5050
         
-        # Initialize network
+        # Inisialiasi network
         ip = get_local_ip()
         self.network = P2PNode(ip, port, username)
         self._setup_network_callbacks()
@@ -355,7 +280,7 @@ class P2PChatApp:
             self.network.start()
             self.gui.set_server_info(ip, port)
             self.gui.set_username(username)  # Display username in header
-            self.gui.add_system_message(f"Server dimulai di {ip}:{port}")
+            self.gui.add_system_message(f"Server berjalan di {ip}:{port}")
             self.gui.add_system_message(f"Username: {username}")
         except Exception as e:
             messagebox.showerror("Error", f"Gagal memulai server: {str(e)}")
@@ -366,10 +291,8 @@ class P2PChatApp:
             if self.network:
                 self.network.stop()
             self.gui.close()
-        
         self.gui.root.protocol("WM_DELETE_WINDOW", on_closing)
-        
-        # Run GUI
+
         self.gui.run()
 
 

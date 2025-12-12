@@ -39,7 +39,7 @@ class P2PChatCLI:
             self.log(f"Kunci dari {self.network.get_peer_username(pid)}", "🔐")
         )
         self.network.on_message_received = lambda pid, data: self.log(
-            f"{self.network.get_peer_username(pid)}: {self.crypto.decrypt_message(data)}", "📩"
+            f"{self.network.get_peer_username(pid)}: {self.crypto.decrypt_message(data, pid)}", "📩"
         )
         self.network.on_group_invite_received = self.handle_group_invite
         self.network.on_group_message_received = self.handle_group_msg

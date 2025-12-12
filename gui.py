@@ -8,27 +8,26 @@ from network import get_local_ip
 
 # Set appearance mode and default color theme
 ctr.set_appearance_mode("dark")
-ctr.set_default_color_theme("blue")
+ctr.set_default_color_theme("dark-blue")
 
 
 class ChatGUI:
     # GUI dengan customTKinter
     COLORS = {
-        'bg_dark': '#1a0033',           
-        'bg_medium': '#2d1b4e',         
-        'bg_light': '#3d2963',         
-        'accent': '#ff6b35',           
-        'accent_hover': '#ff8c61',  
-        'text': '#fff5e6',              
-        'text_muted': '#c4b0d6',    
-        'success': '#06ffa5',         
-        'warning': '#ff006e',         
-        'border': '#4d3d6b',            
-        'group': '#ffbe0b',             
-        'message_sent': '#ff4800',      
-        'message_received': '#8338ec',  
+        'bg_dark': '#0b141a',           # Bg utama
+        'bg_medium': '#111b21',         # Sidebar
+        'bg_light': '#202c33',          # Input field
+        'accent': '#00a884',            # Primary action 
+        'accent_hover': '#06cf9c',      # Hover 
+        'text': '#e9edef',              # Text utama
+        'text_muted': '#8696a0',        # Text secondary
+        'success': '#25d366',           # Success 
+        'warning': '#ea4335',           # Error
+        'border': '#2a3942',            # Border
+        'group': '#334155',             # Group chat 
+        'message_sent': '#005c4b',      # Bubble sent 
+        'message_received': '#202c33',  # Bubble received 
     }
-
     
     def __init__(self):
         self.root = ctr.CTk()
@@ -175,14 +174,14 @@ class ChatGUI:
         # Groups section
         groups_header = ctr.CTkLabel(scroll_content, text="Groups",
                                     font=ctr.CTkFont(size=12, weight="bold"),
-                                    text_color=self.COLORS['group'])
+                                    text_color=self.COLORS['text'])
         groups_header.pack(padx=15, anchor="w", pady=(6, 3))
         
         # Create group button
         self.create_group_btn = ctr.CTkButton(scroll_content, text="➕ Create Group",
                                              height=30,
                                              fg_color=self.COLORS['group'],
-                                             hover_color="#d97706",
+                                             hover_color="#475569",
                                              font=ctr.CTkFont(size=11, weight="bold"),
                                              command=self._on_create_group_click)
         self.create_group_btn.pack(fill="x", padx=15, pady=(0, 4))
@@ -193,7 +192,7 @@ class ChatGUI:
         self.groups_frame.pack(fill="x", padx=15, pady=(0, 12))
     
     def _create_chat_area(self):
-        # Area chat 
+        # Chat section 
         chat_container = ctr.CTkFrame(self.root, corner_radius=0,
                                      fg_color=self.COLORS['bg_dark'])
         chat_container.grid(row=0, column=1, sticky="nswe")
@@ -207,7 +206,7 @@ class ChatGUI:
         header.grid_propagate(False)
         header.grid_columnconfigure(0, weight=1)
         
-        # Left side - chat title
+        # Bagian kiri - chat title
         left_header = ctr.CTkFrame(header, fg_color="transparent")
         left_header.grid(row=0, column=0, sticky="w", padx=20, pady=15)
         
@@ -221,45 +220,23 @@ class ChatGUI:
                                         text_color=self.COLORS['success'])
         self.chat_status.pack(anchor="w")
         
-        # Right side - username kita
+        # Bagian kanan - username kita
         right_header = ctr.CTkFrame(header, fg_color="transparent")
-        right_header.grid(row=0, column=1, sticky="e", padx=20, pady=15)
+        right_header.grid(row=0, column=0, sticky="e", padx=20, pady=15)
         
         self.my_username_label = ctr.CTkLabel(right_header, text="👤 Me",
-                                              font=ctr.CTkFont(size=12, weight="bold"),
-                                              text_color=self.COLORS['accent'])
+                                              font=ctr.CTkFont(size=16, weight="bold"),
+                                              text_color=self.COLORS['text'])
         self.my_username_label.pack(anchor="e")
         
         # Chat messages area
-        self.chat_text = ctr.CTkTextbox(chat_container, 
-                                        fg_color=self.COLORS['bg_dark'],
-                                        text_color=self.COLORS['text'],
-                                        font=ctr.CTkFont(size=13),
-                                        wrap="word",
-                                        state="disabled",
-                                        corner_radius=0)
-        self.chat_text.grid(row=1, column=0, sticky="nswe", padx=10, pady=(10, 0))
-        
-        # chat badge
-        self.chat_text.tag_config('sent', 
-                                   foreground=self.COLORS['text'], 
-                                   background=self.COLORS['message_sent'],
-                                   lmargin1=50,
-                                   lmargin2=50,
-                                   rmargin=10)
-        self.chat_text.tag_config('sent_time', foreground=self.COLORS['text_muted'])
-        self.chat_text.tag_config('received', 
-                                   foreground=self.COLORS['text'], 
-                                   background=self.COLORS['message_received'],
-                                   lmargin1=10,
-                                   lmargin2=10,
-                                   rmargin=50)
-        self.chat_text.tag_config('received_time', foreground=self.COLORS['text_muted'])
-        self.chat_text.tag_config('system', foreground=self.COLORS['text_muted'], justify='center')
-        self.chat_text.tag_config('time', foreground=self.COLORS['text_muted'])
-        self.chat_text.tag_config('file', foreground=self.COLORS['warning'])
-        self.chat_text.tag_config('group', foreground=self.COLORS['group'])
-        
+        self.chat_frame = ctr.CTkScrollableFrame(
+            chat_container,
+            fg_color=self.COLORS['bg_dark'],
+            corner_radius=0
+        )
+        self.chat_frame.grid(row=1, column=0, sticky="nswe", padx=10, pady=(10, 0))
+
         # Progress bar
         self.progress_frame = ctr.CTkFrame(chat_container, fg_color="transparent")
         self.progress_label = ctr.CTkLabel(self.progress_frame, text="",
@@ -354,25 +331,21 @@ class ChatGUI:
     def _on_peer_click(self, peer_id: str):
         # Handle pemilihan peer
         self._switch_chat(peer_id, is_group=False)
-        # Update button states
         self._update_selected_states(peer_id, is_group=False)
     
     def _on_group_click(self, group_id: str):
         # Handle pemilihan group
         self._switch_chat(group_id, is_group=True)
-        # Update button states
         self._update_selected_states(group_id, is_group=True)
     
     def _update_selected_states(self, selected_id: str, is_group: bool):
         # Update visual state peer/group button
-        # Reset semua peer button
         for pid, btn in self.peer_buttons.items():
             if pid == selected_id and not is_group:
                 btn.configure(fg_color=self.COLORS['accent'])
             else:
                 btn.configure(fg_color="transparent")
-        
-        # Reset semua group button
+
         for gid, btn in self.group_buttons.items():
             if gid == selected_id and is_group:
                 btn.configure(fg_color=self.COLORS['group'])
@@ -384,8 +357,7 @@ class ChatGUI:
         if not self.peers:
             messagebox.showwarning("Warning", "Tidak ada peer yang terhubung!")
             return
-        
-        # Input nama group
+
         group_name = simpledialog.askstring("Create Group", "Masukkan nama group:",
                                            parent=self.root)
         if not group_name:
@@ -402,11 +374,9 @@ class ChatGUI:
         ctr.CTkLabel(dialog, text="Pilih peers untuk diundang:",
                     font=ctr.CTkFont(size=14, weight="bold")).pack(pady=15)
         
-        # Scrollable checkboxes
         checkbox_frame = ctr.CTkScrollableFrame(dialog, height=250)
         checkbox_frame.pack(fill="both", expand=True, padx=20, pady=10)
         
-        # Checkboxes each peer
         selected_peers = {}
         for peer_id, username in self.peers.items():
             var = ctr.BooleanVar()
@@ -429,7 +399,7 @@ class ChatGUI:
         
         ctr.CTkButton(dialog, text="Create Group",
                      fg_color=self.COLORS['group'],
-                     hover_color="#d97706",
+                     hover_color="#475569",
                      font=ctr.CTkFont(size=14, weight="bold"),
                      height=42,
                      command=on_confirm).pack(pady=20)
@@ -442,37 +412,43 @@ class ChatGUI:
         if is_group:
             name = self.groups.get(chat_id, "Unknown Group")
             self.chat_title.configure(text=f"👥 {name}")
-            self.chat_status.configure(text="🔐 Group Encrypted", text_color=self.COLORS['group'])
+            self.chat_status.configure(text="🔐 Group Encrypted", text_color=self.COLORS['success'])
         else:
             name = self.peers.get(chat_id, "Unknown")
             self.chat_title.configure(text=f"💬 Chat dengan {name}")
             self.chat_status.configure(text="🔒 End-to-End Encrypted", text_color=self.COLORS['success'])
         
-        # Load chat history
         self._load_chat_history(chat_id)
     
     def _load_chat_history(self, chat_id: str):
-        # Load andand display chat history peer/group
-        self.chat_text.configure(state="normal")
-        self.chat_text.delete("1.0", "end")
+        # Load dan display chat history
+        for widget in self.chat_frame.winfo_children():
+            widget.destroy()
         
         if chat_id in self.chat_histories:
             for item in self.chat_histories[chat_id]:
                 timestamp, sender, message, is_sent, msg_type = item
+                
                 if msg_type == 'message':
-                    tag = 'sent' if is_sent else 'received'
-                    prefix = "You" if is_sent else sender
-                    self.chat_text.insert("end", f"\n[{timestamp}] {prefix}:\n", 'time')
-                    self.chat_text.insert("end", f"  {message}  \n", tag)
+                    if is_sent:
+                        self._add_sent_bubble(sender, message, timestamp)
+                    else:
+                        self._add_received_bubble(sender, message, timestamp)
+                
                 elif msg_type == 'system':
-                    self.chat_text.insert("end", f"\n--- {message} ---\n", 'system')
+                    sys_frame = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+                    sys_frame.pack(fill="x", pady=8)
+                    
+                    ctr.CTkLabel(
+                        sys_frame,
+                        text=f"--- {message} ---",
+                        font=ctr.CTkFont(size=10, slant="italic"),
+                        text_color=self.COLORS['text_muted']
+                    ).pack()
+                
                 elif msg_type == 'file':
-                    self.chat_text.insert("end", f"\n[{timestamp}] ", 'time')
-                    self.chat_text.insert("end", f"📁 {message}\n", 'file')
-        
-        self.chat_text.configure(state="disabled")
-        self.chat_text.see("end")
-    
+                    pass 
+
     def _store_message(self, chat_id: str, sender: str, message: str, is_sent: bool, msg_type: str = 'message'):
         # Store message ke chat history
         if chat_id not in self.chat_histories:
@@ -511,7 +487,6 @@ class ChatGUI:
     
     def _update_peers_list(self):
         # Update tampilan list peers
-        # Clear existing button
         for widget in self.peers_frame.winfo_children():
             widget.destroy()
         self.peer_buttons.clear()
@@ -536,7 +511,6 @@ class ChatGUI:
     
     def _update_groups_list(self):
         # Update tampilan list groups
-        # Clear existing buttons
         for widget in self.groups_frame.winfo_children():
             widget.destroy()
         self.group_buttons.clear()
@@ -546,7 +520,7 @@ class ChatGUI:
                                text=f"👥 {group_name}",
                                fg_color="transparent",
                                hover_color=self.COLORS['group'],
-                               text_color=self.COLORS['group'],
+                               text_color=self.COLORS['text'],
                                anchor="w",
                                height=35,
                                font=ctr.CTkFont(size=13),
@@ -555,60 +529,158 @@ class ChatGUI:
             self.group_buttons[group_id] = btn
     
     def add_message(self, sender: str, message: str, is_sent: bool = False, peer_id: str = None):
-        # Tambah pesan ke chat
+        # Tambah pesan ke area chat dengan bubble
         chat_id = peer_id if peer_id else self.current_peer
         if not chat_id:
             return
-        
-        # Store di history
+
         self._store_message(chat_id, sender, message, is_sent, 'message')
-        
-        # Display ketika current chat
+
         if chat_id == self.current_peer:
-            self.chat_text.configure(state="normal")
-            
             timestamp = datetime.now().strftime("%H:%M")
             
             if is_sent:
-                time_tag = 'sent_time'
-                msg_tag = 'sent'
-                prefix = "You"
+                self._add_sent_bubble(sender, message, timestamp)
             else:
-                time_tag = 'received_time'
-                msg_tag = 'received'
-                prefix = sender
-            
-            self.chat_text.insert("end", f"\n[{timestamp}] {prefix}:\n", time_tag)
-            self.chat_text.insert("end", f"  {message}  \n", msg_tag)
-            
-            self.chat_text.configure(state="disabled")
-            self.chat_text.see("end")
+                self._add_received_bubble(sender, message, timestamp)
+
+            self.chat_frame._parent_canvas.yview_moveto(1.0)
+
+
+    def _add_sent_bubble(self, sender: str, message: str, timestamp: str):
+       # Buat bubble untuk pesan yang terkirim
+        container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        container.pack(fill="x", pady=5)
+        inner = ctr.CTkFrame(container, fg_color="transparent")
+        inner.pack(side="right", anchor="e", padx=10)
+
+        bubble = ctr.CTkFrame(inner, fg_color=self.COLORS['message_sent'], corner_radius=12)
+        bubble.pack(anchor="e")
+        
+        msg_label = ctr.CTkLabel(
+            bubble,
+            text=message,
+            font=ctr.CTkFont(size=13),
+            text_color=self.COLORS['text'],
+            wraplength=350,
+            justify="left",
+            anchor="w"
+        )
+        msg_label.pack(padx=12, pady=8)
+        
+        info_label = ctr.CTkLabel(
+            inner,
+            text=f"You  •  {timestamp}",
+            font=ctr.CTkFont(size=10),
+            text_color=self.COLORS['text_muted']
+        )
+        info_label.pack(anchor="e", pady=(2, 0))
+
+
+    def _add_received_bubble(self, sender: str, message: str, timestamp: str):
+        # Buat bubble untuk pesan yang terkirim
+        container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        container.pack(fill="x", pady=5)
+        inner = ctr.CTkFrame(container, fg_color="transparent")
+        inner.pack(side="left", anchor="w", padx=10)
+        
+        bubble = ctr.CTkFrame(inner, fg_color=self.COLORS['message_received'], corner_radius=12)
+        bubble.pack(anchor="w")
+        
+        msg_label = ctr.CTkLabel(
+            bubble,
+            text=message,
+            font=ctr.CTkFont(size=13),
+            text_color=self.COLORS['text'],
+            wraplength=350,
+            justify="left",
+            anchor="w"
+        )
+        msg_label.pack(padx=12, pady=8)
+        
+        info_label = ctr.CTkLabel(
+            inner,
+            text=f"{sender}  •  {timestamp}",
+            font=ctr.CTkFont(size=10),
+            text_color=self.COLORS['text_muted']
+        )
+        info_label.pack(anchor="w", pady=(2, 0))
+
+
     
     def add_group_message(self, group_id: str, sender: str, message: str, is_sent: bool = False):
         # Tambah pesan group ke chat
-        # Store ke history
         self._store_message(group_id, sender, message, is_sent, 'message')
         
-        # Display ketika current chat
         if group_id == self.current_peer and self.current_is_group:
-            self.chat_text.configure(state="normal")
-            
             timestamp = datetime.now().strftime("%H:%M")
             
             if is_sent:
-                time_tag = 'sent_time'
-                msg_tag = 'sent'
-                prefix = "You"
+                self._add_group_sent_bubble(sender, message, timestamp)
             else:
-                time_tag = 'received_time'
-                msg_tag = 'received'
-                prefix = sender
+                self._add_group_received_bubble(sender, message, timestamp)
             
-            self.chat_text.insert("end", f"\n[{timestamp}] {prefix}:\n", time_tag)
-            self.chat_text.insert("end", f"  {message}  \n", msg_tag)
-            
-            self.chat_text.configure(state="disabled")
-            self.chat_text.see("end")
+            self.chat_frame._parent_canvas.yview_moveto(1.0)
+
+    def _add_group_sent_bubble(self, sender: str, message: str, timestamp: str):
+        # Bubble pesan group yg terkirim
+        container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        container.pack(fill="x", pady=5)
+        inner = ctr.CTkFrame(container, fg_color="transparent")
+        inner.pack(side="right", anchor="e", padx=10)
+        
+        bubble = ctr.CTkFrame(inner, fg_color=self.COLORS['message_sent'], corner_radius=12)
+        bubble.pack(anchor="e")
+        
+        msg_label = ctr.CTkLabel(
+            bubble,
+            text=message,
+            font=ctr.CTkFont(size=13),
+            text_color=self.COLORS['text'],
+            wraplength=350,
+            justify="left",
+            anchor="w"
+        )
+        msg_label.pack(padx=12, pady=8)
+
+        info_label = ctr.CTkLabel(
+            inner,
+            text=f"You  •  {timestamp}",
+            font=ctr.CTkFont(size=10),
+            text_color=self.COLORS['text_muted']
+        )
+        info_label.pack(anchor="e", pady=(2, 0))
+
+
+    def _add_group_received_bubble(self, sender: str, message: str, timestamp: str):
+        # Bubble pesan group yg diterima
+        container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        container.pack(fill="x", pady=5)
+        inner = ctr.CTkFrame(container, fg_color="transparent")
+        inner.pack(side="left", anchor="w", padx=10)
+        
+        bubble = ctr.CTkFrame(inner, fg_color=self.COLORS['message_received'], corner_radius=12)
+        bubble.pack(anchor="w")
+        
+        msg_label = ctr.CTkLabel(
+            bubble,
+            text=message,
+            font=ctr.CTkFont(size=13),
+            text_color=self.COLORS['text'],
+            wraplength=350,
+            justify="left",
+            anchor="w"
+        )
+        msg_label.pack(padx=12, pady=8)
+        
+        info_label = ctr.CTkLabel(
+            inner,
+            text=f"{sender}  •  {timestamp}",
+            font=ctr.CTkFont(size=10),
+            text_color=self.COLORS['text_muted']
+        )
+        info_label.pack(anchor="w", pady=(2, 0))
+
     
     def add_file_message(self, sender: str, filename: str, is_sent: bool = False, peer_id: str = None):
         # Tambah notifikasi file ke chat
@@ -620,28 +692,58 @@ class ChatGUI:
         prefix = "You" if is_sent else sender
         msg = f"{prefix} {action} file: {filename}"
         
-        # Store ke history
         self._store_message(chat_id, sender, msg, is_sent, 'file')
         
         if chat_id == self.current_peer:
-            self.chat_text.configure(state="normal")
-            
             timestamp = datetime.now().strftime("%H:%M")
-            self.chat_text.insert("end", f"\n[{timestamp}] ", 'time')
-            self.chat_text.insert("end", f"📁 {msg}\n", 'file')
-            
-            self.chat_text.configure(state="disabled")
-            self.chat_text.see("end")
+            self._add_file_bubble(sender, filename, timestamp, is_sent)
+            self.chat_frame._parent_canvas.yview_moveto(1.0)
+    
+    def _add_file_bubble(self, sender: str, filename: str, timestamp: str, is_sent: bool):
+        # Bubble untuk file message
+        container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        container.pack(fill="x", pady=5)
+        
+        if is_sent:
+            inner = ctr.CTkFrame(container, fg_color="transparent")
+            inner.pack(side="right", anchor="e", padx=10)
+            bubble_color = self.COLORS['message_sent']
+            anchor = "e"
+            info_text = f"You  •  {timestamp}"
+        else:
+            inner = ctr.CTkFrame(container, fg_color="transparent")
+            inner.pack(side="left", anchor="w", padx=10)
+            bubble_color = self.COLORS['message_received']
+            anchor = "w"
+            info_text = f"{sender}  •  {timestamp}"
+        
+        bubble = ctr.CTkFrame(inner, fg_color=bubble_color, corner_radius=12)
+        bubble.pack(anchor=anchor)
+        
+        msg_label = ctr.CTkLabel(
+            bubble,
+            text=f"📁 {filename}",
+            font=ctr.CTkFont(size=13),
+            text_color=self.COLORS['text'],
+            wraplength=350,
+            justify="left",
+            anchor="w"
+        )
+        msg_label.pack(padx=12, pady=8)
+        
+        info_label = ctr.CTkLabel(
+            inner,
+            text=info_text,
+            font=ctr.CTkFont(size=10),
+            text_color=self.COLORS['text_muted']
+        )
+        info_label.pack(anchor=anchor, pady=(2, 0))
     
     def add_file_message_with_download(self, sender: str, filename: str, file_id: str, filesize: int = 0, peer_id: str = None):
         # Tambah notifikasi file dan tombol download ke chat
         chat_id = peer_id if peer_id else self.current_peer
-        
-        self.chat_text.configure(state="normal")
-        
         timestamp = datetime.now().strftime("%H:%M")
-        
-        # Format ukuran file
+
         if filesize > 0:
             if filesize < 1024:
                 size_str = f"{filesize} B"
@@ -656,29 +758,50 @@ class ChatGUI:
         msg = f"{sender} mengirim file: {filename}{size_info}"
         self._store_message(chat_id, sender, msg, False, 'file')
         
-        self.chat_text.insert("end", f"\n[{timestamp}] ", 'time')
-        self.chat_text.insert("end", f"📁 {msg}\n", 'file')
+        container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        container.pack(fill="x", pady=5)
         
-        # Dwonload button
-        download_btn = ctr.CTkButton(self.chat_text, text="📥 Download",
+        inner = ctr.CTkFrame(container, fg_color="transparent")
+        inner.pack(side="left", anchor="w", padx=10)
+
+        bubble = ctr.CTkFrame(inner, fg_color=self.COLORS['message_received'], corner_radius=12)
+        bubble.pack(anchor="w")
+        
+        msg_label = ctr.CTkLabel(
+            bubble,
+            text=f"📁 {filename}{size_info}",
+            font=ctr.CTkFont(size=13),
+            text_color=self.COLORS['text'],
+            wraplength=350,
+            justify="left",
+            anchor="w"
+        )
+        msg_label.pack(padx=12, pady=(8, 4))
+
+        download_btn = ctr.CTkButton(bubble, text="📥 Download",
                                     fg_color=self.COLORS['success'],
                                     hover_color="#22c55e",
                                     text_color=self.COLORS['bg_dark'],
                                     font=ctr.CTkFont(size=12, weight="bold"),
                                     height=32, width=120,
                                     command=lambda fid=file_id: self._on_download_click(fid))
+        download_btn.pack(padx=12, pady=(0, 8))
         
-        # Store button reference
+        info_label = ctr.CTkLabel(
+            inner,
+            text=f"{sender}  •  {timestamp}",
+            font=ctr.CTkFont(size=10),
+            text_color=self.COLORS['text_muted']
+        )
+        info_label.pack(anchor="w", pady=(2, 0))
+        
         self.pending_files[file_id] = {
             'filename': filename,
-            'button': download_btn
+            'button': download_btn,
+            'bubble': bubble
         }
         
-        self.chat_text.window_create("end", window=download_btn)
-        self.chat_text.insert("end", "\n")
-        
-        self.chat_text.configure(state="disabled")
-        self.chat_text.see("end")
+        self.chat_frame._parent_canvas.yview_moveto(1.0)
     
     def _on_download_click(self, file_id: str):
         # Handle klik tombol download
@@ -700,10 +823,16 @@ class ChatGUI:
                 state="disabled"
             )
             
-            self.chat_text.configure(state="normal")
-            self.chat_text.insert("end", f"   📂 Lokasi: {save_path}\n", 'time')
-            self.chat_text.configure(state="disabled")
-            self.chat_text.see("end")
+            # Add saved location label
+            if 'bubble' in file_info:
+                loc_label = ctr.CTkLabel(
+                    file_info['bubble'],
+                    text=f"📂 {save_path}",
+                    font=ctr.CTkFont(size=10),
+                    text_color=self.COLORS['text_muted'],
+                    wraplength=300
+                )
+                loc_label.pack(padx=12, pady=(0, 8))
             
             del self.pending_files[file_id]
     
@@ -711,11 +840,18 @@ class ChatGUI:
         # Tambah pesan sistem ke chat
         if chat_id:
             self._store_message(chat_id, "", message, False, 'system')
+
+        sys_frame = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
+        sys_frame.pack(fill="x", pady=8)
         
-        self.chat_text.configure(state="normal")
-        self.chat_text.insert("end", f"\n--- {message} ---\n", 'system')
-        self.chat_text.configure(state="disabled")
-        self.chat_text.see("end")
+        sys_label = ctr.CTkLabel(
+            sys_frame,
+            text=f"--- {message} ---",
+            font=ctr.CTkFont(size=10, slant="italic"),
+            text_color=self.COLORS['text_muted']
+        )
+        sys_label.pack()
+
     
     def show_progress(self, filename: str, progress: float):
         # Tampilkan progress transfer file
