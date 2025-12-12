@@ -1,8 +1,3 @@
-"""
-P2P Secure Chat - CLI Version dengan Group Chat
-Menggunakan python-p2p-network library
-"""
-
 import uuid
 import socket
 from datetime import datetime
@@ -11,6 +6,7 @@ from network import P2PNode
 
 
 class P2PChatCLI:
+    # Versi CLI untuk di tes di hp (kepo aja si ini hehe)
     def __init__(self):
         self.crypto = CryptoManager()
         self.network = None
@@ -35,9 +31,9 @@ class P2PChatCLI:
     def setup_callbacks(self):
         self.network.on_peer_connected = lambda pid, user: (
             self.network.send_public_key(pid, self.crypto.get_public_key()),
-            self.log(f"{user} terhubung", "✅")
+            self.log(f"{user} terhubung")
         )
-        self.network.on_peer_disconnected = lambda pid, user: self.log(f"{user} terputus", "❌")
+        self.network.on_peer_disconnected = lambda pid, user: self.log(f"{user} terputus")
         self.network.on_public_key_received = lambda pid, key: (
             self.crypto.import_peer_public_key(pid, key),
             self.log(f"Kunci dari {self.network.get_peer_username(pid)}", "🔐")
@@ -61,18 +57,18 @@ class P2PChatCLI:
             gname = gname.name if gname else gid[:8]
             self.log(f"[{gname}] {sender}: {msg}", "👥")
         except Exception as e:
-            self.log(f"Error: {e}", "❌")
+            self.log(f"Error: {e}")
     
     def send_msg(self, msg):
         if not self.current_peer:
-            return self.log("Pilih peer dulu!", "❌")
+            return self.log("Pilih peer dulu!")
         enc = self.crypto.encrypt_message(msg, self.current_peer)
         self.network.send_chat(self.current_peer, enc)
         self.log(f"You: {msg}", "📤")
     
     def send_group_msg(self, gid, msg):
         if not self.crypto.has_group_key(gid):
-            return self.log("Tidak punya key group ini!", "❌")
+            return self.log("Tidak punya key group ini!")
         enc = self.crypto.encrypt_group_message(msg, gid)
         self.network.send_group_message(gid, enc, self.username)
         gname = self.network.groups.get(gid)
@@ -82,7 +78,7 @@ class P2PChatCLI:
     def create_group(self):
         peers = self.network.get_connected_peers()
         if not peers:
-            return self.log("Tidak ada peer!", "❌")
+            return self.log("Tidak ada peer!")
         
         name = input("Nama group: ").strip()
         if not name:
@@ -104,12 +100,12 @@ class P2PChatCLI:
                 pass
         
         if not members:
-            return self.log("Pilih minimal 1 member!", "❌")
+            return self.log("Pilih minimal 1 member!")
         
         gid = f"group_{uuid.uuid4().hex[:8]}"
         key = self.crypto.create_group_key(gid)
         self.network.create_group(gid, name, members, key)
-        self.log(f"Group '{name}' dibuat!", "✅")
+        self.log(f"Group '{name}' dibuat!")
     
     def show_menu(self):
         print("\n" + "=" * 35)
@@ -143,17 +139,17 @@ class P2PChatCLI:
         while self.running:
             try:
                 self.show_menu()
-                c = input("Pilih: ").strip()
+                opsi = input("Pilih: ").strip()
                 
-                if c == "0":
+                if opsi == "0":
                     break
                 
-                elif c == "1":
+                elif opsi == "1":
                     ip = input("IP: ").strip()
                     p = int(input("Port: ").strip())
                     self.network.connect_to_peer(ip, p)
                 
-                elif c == "2":
+                elif opsi == "2":
                     peers = self.network.get_connected_peers()
                     if not peers:
                         print("  Tidak ada peer.")
@@ -161,10 +157,10 @@ class P2PChatCLI:
                         mark = " *" if pid == self.current_peer else ""
                         print(f"  {i}. {user}{mark}")
                 
-                elif c == "3":
+                elif opsi == "3":
                     peers = list(self.network.get_connected_peers().keys())
                     if not peers:
-                        self.log("Tidak ada peer!", "❌")
+                        self.log("Tidak ada peer!")
                     else:
                         for i, pid in enumerate(peers, 1):
                             print(f"  {i}. {self.network.get_peer_username(pid)}")
@@ -174,10 +170,10 @@ class P2PChatCLI:
                             self.current_group = None
                             self.log(f"Chat: {self.network.get_peer_username(self.current_peer)}", "💬")
                 
-                elif c == "4":
+                elif opsi == "4":
                     groups = self.network.groups
                     if not groups:
-                        self.log("Tidak ada group!", "❌")
+                        self.log("Tidak ada group!")
                     else:
                         for i, (gid, g) in enumerate(groups.items(), 1):
                             print(f"  {i}. {g.name}")
@@ -188,18 +184,18 @@ class P2PChatCLI:
                             self.current_peer = None
                             self.log(f"Group: {groups[self.current_group].name}", "👥")
                 
-                elif c == "5":
+                elif opsi == "5":
                     if self.current_group:
-                        self.log("Mode group, gunakan menu 8", "❌")
+                        self.log("Mode group, gunakan menu 8")
                     else:
                         msg = input("Pesan: ").strip()
                         if msg:
                             self.send_msg(msg)
                 
-                elif c == "6":
+                elif opsi == "6":
                     self.create_group()
                 
-                elif c == "7":
+                elif opsi == "7":
                     groups = self.network.groups
                     if not groups:
                         print("  Tidak ada group.")
@@ -207,9 +203,9 @@ class P2PChatCLI:
                         mark = " *" if gid == self.current_group else ""
                         print(f"  {i}. {g.name}{mark}")
                 
-                elif c == "8":
+                elif opsi == "8":
                     if not self.current_group:
-                        self.log("Pilih group dulu (menu 4)!", "❌")
+                        self.log("Pilih group dulu (menu 4)!")
                     else:
                         msg = input("Pesan: ").strip()
                         if msg:
@@ -218,7 +214,7 @@ class P2PChatCLI:
             except KeyboardInterrupt:
                 break
             except Exception as e:
-                self.log(str(e), "❌")
+                self.log(str(e))
         
         self.network.stop()
         print("Selesai!")

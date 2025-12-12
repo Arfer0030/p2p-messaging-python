@@ -6,7 +6,6 @@ from cryptography.hazmat.primitives import serialization
 
 class KriptoManager:
     # Mengelola enkripsi dan dekripsi dengan X25519 + ChaCha20-Poly1305
-    
     def __init__(self):
         # Generate X25519 key pair
         self.private_key = X25519PrivateKey.generate()

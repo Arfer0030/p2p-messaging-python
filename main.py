@@ -273,9 +273,9 @@ class P2PChatApp:
         root.destroy()
 
         # cek port
-        try:
-            port = int(port_str) if port_str else 5050
-        except ValueError:
+        if port_str and port_str.isdigit():
+            port = int(port_str)
+        else:
             port = 5050
 
         # Get local IP
