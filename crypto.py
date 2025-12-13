@@ -6,14 +6,14 @@ from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 
 class CryptoManager:
-    # Mengelola enkripsi dan dekripsi dengan X25519 + ChaCha20-Poly1305
+    # Mengelola enkripsi dan dekripsi dengan key X25519 dan eknrip dekrip ChaCha20-Poly1305
     def __init__(self):
         # Generate X25519 key pair
         self.private_key = X25519PrivateKey.generate()
         self.public_key = self.private_key.public_key()
-        self.peer_public_keys = {}  # peer_id -> X25519PublicKey
-        self.shared_keys = {}  # peer_id -> shared key (ChaCha20 key)
-        self.group_keys = {}  # group_id -> shared key (32 bytes for ChaCha20)
+        self.peer_public_keys = {}  
+        self.shared_keys = {}  
+        self.group_keys = {}  
         
     def get_public_key_bytes(self) -> bytes:
         # Mendapatkan public key dalam format raw bytes untuk dikirim ke peer

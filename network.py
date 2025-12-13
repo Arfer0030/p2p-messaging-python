@@ -1,8 +1,3 @@
-"""
-Modul Network untuk P2P Chat
-Menggunakan python-p2p-network library untuk koneksi P2P
-"""
-
 import json
 import os
 import socket
@@ -12,6 +7,17 @@ from enum import Enum
 
 from p2pnetwork.node import Node
 
+def get_local_ip() -> str:
+        # Dapetin local IP
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))  
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except Exception as e:
+            print(f"Gagal detect IP lokal: {e}")
+            return "127.0.0.1"
 
 class MessageType(Enum):
     # Inisialiasi type message
@@ -321,15 +327,3 @@ class P2PNode(Node):
         except Exception as e:
             print(f"[ERROR] Error connecting to peer: {e}")
             return False
-        
-def get_local_ip() -> str:
-        # Dapetin local IP
-        try:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(("8.8.8.8", 80))  
-            ip = s.getsockname()[0]
-            s.close()
-            return ip
-        except Exception as e:
-            print(f"[WARNING] Gagal detect IP lokal: {e}")
-            return "127.0.0.1"

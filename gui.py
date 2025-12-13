@@ -5,28 +5,26 @@ from datetime import datetime
 from typing import Callable, Optional
 from network import get_local_ip
 
-
-# Set appearance mode and default color theme
+# Set appearance mode dan default color theme
 ctr.set_appearance_mode("dark")
 ctr.set_default_color_theme("dark-blue")
-
 
 class ChatGUI:
     # GUI dengan customTKinter
     COLORS = {
-        'bg_dark': '#0b141a',           # Bg utama
-        'bg_medium': '#111b21',         # Sidebar
-        'bg_light': '#202c33',          # Input field
-        'accent': '#00a884',            # Primary action 
-        'accent_hover': '#06cf9c',      # Hover 
-        'text': '#e9edef',              # Text utama
-        'text_muted': '#8696a0',        # Text secondary
-        'success': '#25d366',           # Success 
-        'warning': '#ea4335',           # Error
-        'border': '#2a3942',            # Border
-        'group': '#334155',             # Group chat 
-        'message_sent': '#005c4b',      # Bubble sent 
-        'message_received': '#202c33',  # Bubble received 
+        'bg_dark': '#0b141a',          
+        'bg_medium': '#111b21',      
+        'bg_light': '#202c33',         
+        'accent': '#00a884',           
+        'accent_hover': '#06cf9c',      
+        'text': '#e9edef',              
+        'text_muted': '#8696a0',        
+        'success': '#25d366',            
+        'warning': '#ea4335',          
+        'border': '#2a3942',           
+        'group': '#334155',           
+        'message_sent': '#005c4b',      
+        'message_received': '#202c33',  
     }
     
     def __init__(self):
@@ -546,7 +544,6 @@ class ChatGUI:
 
             self.chat_frame._parent_canvas.yview_moveto(1.0)
 
-
     def _add_sent_bubble(self, sender: str, message: str, timestamp: str):
        # Buat bubble untuk pesan yang terkirim
         container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
@@ -575,7 +572,6 @@ class ChatGUI:
             text_color=self.COLORS['text_muted']
         )
         info_label.pack(anchor="e", pady=(2, 0))
-
 
     def _add_received_bubble(self, sender: str, message: str, timestamp: str):
         # Buat bubble untuk pesan yang terkirim
@@ -606,8 +602,6 @@ class ChatGUI:
         )
         info_label.pack(anchor="w", pady=(2, 0))
 
-
-    
     def add_group_message(self, group_id: str, sender: str, message: str, is_sent: bool = False):
         # Tambah pesan group ke chat
         self._store_message(group_id, sender, message, is_sent, 'message')
@@ -651,7 +645,6 @@ class ChatGUI:
         )
         info_label.pack(anchor="e", pady=(2, 0))
 
-
     def _add_group_received_bubble(self, sender: str, message: str, timestamp: str):
         # Bubble pesan group yg diterima
         container = ctr.CTkFrame(self.chat_frame, fg_color="transparent")
@@ -681,7 +674,6 @@ class ChatGUI:
         )
         info_label.pack(anchor="w", pady=(2, 0))
 
-    
     def add_file_message(self, sender: str, filename: str, is_sent: bool = False, peer_id: str = None):
         # Tambah notifikasi file ke chat
         chat_id = peer_id if peer_id else self.current_peer
@@ -779,9 +771,9 @@ class ChatGUI:
         msg_label.pack(padx=12, pady=(8, 4))
 
         download_btn = ctr.CTkButton(bubble, text="📥 Download",
-                                    fg_color=self.COLORS['success'],
+                                    fg_color=self.COLORS['accent'],
                                     hover_color="#22c55e",
-                                    text_color=self.COLORS['bg_dark'],
+                                    text_color=self.COLORS['text'],
                                     font=ctr.CTkFont(size=12, weight="bold"),
                                     height=32, width=120,
                                     command=lambda fid=file_id: self._on_download_click(fid))
@@ -819,11 +811,11 @@ class ChatGUI:
             
             file_info['button'].configure(
                 text="✅ Tersimpan",
-                fg_color=self.COLORS['text_muted'],
+                fg_color=self.COLORS['group'],
+                text_color=self.COLORS['text'],
                 state="disabled"
             )
             
-            # Add saved location label
             if 'bubble' in file_info:
                 loc_label = ctr.CTkLabel(
                     file_info['bubble'],

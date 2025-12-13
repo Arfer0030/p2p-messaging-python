@@ -1,6 +1,7 @@
 # Dependencies
-cryptography>=41.0.0
-p2pnetwork>=1.2
+cryptography
+p2pnetwork
+customtkinter
 
 # Standard Library (Gaperlu instalasi, sudah built-in dengan Python)
 # - tkinter (GUI)
@@ -11,3 +12,10 @@ p2pnetwork>=1.2
 # - os (File operations)
 # - base64 (Encoding)
 # - datetime (Timestamps)
+
+# Cara run
+# install libarary -> pip install -r requirements.txt
+# run main         -> py main.py 
+# Input username dan port
+# Hubungkan ke node peer lain menggunakan ip dan portnya
+# P2P chat app sudah bisa digunakan untuk mengirim pesan teks, file dan membuat chat group peer

@@ -1,8 +1,3 @@
-"""
-P2P Secure Chat Application
-Main entry point - integrasi semua module dengan group chat support
-"""
-
 import os
 import threading
 import uuid
