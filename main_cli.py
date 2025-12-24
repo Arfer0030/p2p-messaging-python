@@ -4,7 +4,6 @@ from datetime import datetime
 from crypto import CryptoManager
 from network import P2PNode
 
-
 class P2PChatCLI:
     # Versi CLI untuk di tes di hp (kepo aja si ini hehe)
     def __init__(self):

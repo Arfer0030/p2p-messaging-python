@@ -2,13 +2,11 @@ import os
 import threading
 import uuid
 import tkinter as tk
-import socket
 from tkinter import simpledialog, messagebox
 from datetime import datetime
 from crypto import CryptoManager
 from network import P2PNode, get_local_ip
 from gui import ChatGUI
-
 
 class P2PChatApp:
     DOWNLOAD_DIR = "downloads"
@@ -274,7 +272,7 @@ class P2PChatApp:
         try:
             self.network.start()
             self.gui.set_server_info(ip, port)
-            self.gui.set_username(username)  # Display username in header
+            self.gui.set_username(username) 
             self.gui.add_system_message(f"Server berjalan di {ip}:{port}")
             self.gui.add_system_message(f"Username: {username}")
         except Exception as e:
@@ -290,12 +288,10 @@ class P2PChatApp:
 
         self.gui.run()
 
-
 def main():
     # Entry point
     app = P2PChatApp()
     app.start()
-
 
 if __name__ == "__main__":
     main()

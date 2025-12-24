@@ -4,7 +4,6 @@ import socket
 from typing import Callable, Optional
 from dataclasses import dataclass, field
 from enum import Enum
-
 from p2pnetwork.node import Node
 
 def get_local_ip() -> str:
@@ -51,6 +50,7 @@ class P2PNode(Node):
         self.username = username
         self.peer_usernames = {}  
         self.groups = {}  
+        self.receiving_files = {}
         # Callbacks
         self.on_message_received: Optional[Callable] = None
         self.on_file_received: Optional[Callable] = None
@@ -60,7 +60,6 @@ class P2PNode(Node):
         self.on_file_progress: Optional[Callable] = None
         self.on_group_invite_received: Optional[Callable] = None
         self.on_group_message_received: Optional[Callable] = None
-        self.receiving_files = {}
     
     def _handle_disconnect(self, node):
         # Handle disconnect peer
@@ -136,7 +135,7 @@ class P2PNode(Node):
             self.on_group_message_received(from_id, payload)
     
     def _handle_group_join(self, from_id, payload):
-        # Handle notif group join 
+        # Handle ketika ada yang join group
         group_id = payload['group_id']
         if group_id in self.groups:
             if from_id not in self.groups[group_id].members:
@@ -199,7 +198,7 @@ class P2PNode(Node):
     
     def send_public_key(self, node_id: str, public_key: bytes):
         # Kirim public key ke peer
-        node = self._get_node_by_id(node_id)
+        node = self.get_node_by_id(node_id)
         if node:
             self.send_to_node(node, {
                 'type': MessageType.PUBLIC_KEY.value,
@@ -208,7 +207,7 @@ class P2PNode(Node):
     
     def send_chat(self, node_id: str, encrypted_data: dict) -> bool:
         # Kirim pesan chat terenkripsi
-        node = self._get_node_by_id(node_id)
+        node = self.get_node_by_id(node_id)
         if node:
             self.send_to_node(node, {
                 'type': MessageType.CHAT.value,
@@ -219,7 +218,7 @@ class P2PNode(Node):
     
     def send_file(self, node_id: str, filename: str, encrypted_data: dict):
         # Kirim file terenkripsi dalam chunks
-        node = self._get_node_by_id(node_id)
+        node = self.get_node_by_id(node_id)
         if not node:
             return
         file_data = encrypted_data['encrypted_file']
@@ -262,7 +261,7 @@ class P2PNode(Node):
         )
         
         for member_id in member_ids:
-            node = self._get_node_by_id(member_id)
+            node = self.get_node_by_id(member_id)
             if node:
                 self.send_to_node(node, {
                     'type': MessageType.GROUP_INVITE.value,
@@ -288,7 +287,7 @@ class P2PNode(Node):
         
         for member_id in group.members:
             if member_id != self.id:
-                node = self._get_node_by_id(member_id)
+                node = self.get_node_by_id(member_id)
                 if node:
                     self.send_to_node(node, {
                         'type': MessageType.GROUP_MESSAGE.value,
@@ -298,7 +297,7 @@ class P2PNode(Node):
     
     # =====> Utility Method 
     
-    def _get_node_by_id(self, node_id: str):
+    def get_node_by_id(self, node_id: str):
         # Get node dari id
         for node in self.all_nodes:
             if node.id == node_id:

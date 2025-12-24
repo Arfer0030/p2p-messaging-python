@@ -29,7 +29,6 @@ Aplikasi chat peer-to-peer (P2P) terenkripsi end-to-end dengan dukungan group ch
 1. Clone repository:
 ```bash
 git clone <repository-url>
-cd p2p-secure-chat
 ```
 
 2. Install dependencies:

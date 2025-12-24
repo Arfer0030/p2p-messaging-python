@@ -4,7 +4,6 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PrivateKey, X
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
-
 class CryptoManager:
     # Mengelola enkripsi dan dekripsi dengan key X25519 dan eknrip dekrip ChaCha20-Poly1305
     def __init__(self):
